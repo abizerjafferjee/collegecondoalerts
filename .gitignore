@@ -1,0 +1,5 @@
+webcrawler/documents
+webcrawler/tests
+webcrawler/chromedriver.exe
+webcrawler/webcrawler/spiders/__pycache__
+webcrawler/webcrawler/spiders/debug.log
