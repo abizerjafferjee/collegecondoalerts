@@ -2,4 +2,6 @@ webcrawler/documents
 webcrawler/tests
 webcrawler/chromedriver.exe
 webcrawler/webcrawler/spiders/__pycache__
+webcrawler/webcrawler/__pycache__
+webcrawler/processors/__pycache__
 webcrawler/webcrawler/spiders/debug.log
