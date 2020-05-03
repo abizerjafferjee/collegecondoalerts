@@ -5,9 +5,14 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
+import os
+import sys
 import pymongo
 from scrapy.utils.project import get_project_settings
 from scrapy.exceptions import DropItem
+dirpath = os.path.dirname(__file__)
+sys.path.append(os.path.join('..', dirpath))
+from processors import places4students
 
 settings = get_project_settings()
 
@@ -49,4 +54,4 @@ class MongoDBPipeline(object):
         trigger another process that processes
         the new data in this collection
         """
-        pass
+        places4students.Places4StudentsProcessor()
