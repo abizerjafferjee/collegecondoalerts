@@ -24,6 +24,9 @@ ROBOTSTXT_OBEY = True
 ####################################################
 # NEW SETTINGS
 ####################################################
+ENV = 'PROD'
+CHROME_DRIVER = '/usr/bin/chromedriver'
+
 ITEM_PIPELINES = {
     'webcrawler.pipelines.MongoDBPipeline': 800
 }

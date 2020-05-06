@@ -10,15 +10,20 @@ TODO:
 import os
 import json
 from time import sleep
+
 import scrapy
 from scrapy.selector import Selector
+
 import selenium
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
-from ..items import Places4StudentsListingItem
 
+from ..items import Places4StudentsListingItem
+from scrapy.utils.project import get_project_settings
+
+settings = get_project_settings()
 basepath = os.path.dirname(__file__)
 
 class Places4studentsSpider(scrapy.Spider):
@@ -34,10 +39,19 @@ class Places4studentsSpider(scrapy.Spider):
         """
         main function to scrape a college's property listings
         """
-        driver = webdriver.Chrome(
-            os.path.abspath(os.path.join(basepath, '../../chromedriver'))
-        )
+        if settings['ENV'] == 'dev':
+            driver = webdriver.Chrome(
+                os.path.abspath(os.path.join(basepath, '../../chromedriver'))
+            )
+        
+        elif settings['ENV'] == 'prod':
+            chrome_options = Options()
+            chrome_options.add_argument('--headless')
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.add_argument('--disable-dev-shm-usage')
 
+            driver = webdriver.Chrome(settings['CHROME_DRIVER'], chrome_options=chrome_options)
+            
         college_id = self.get_college_id(response.url)
         college_name = self.college_names[college_id]
 
