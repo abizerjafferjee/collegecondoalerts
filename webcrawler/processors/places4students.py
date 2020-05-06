@@ -3,7 +3,7 @@ import pprint
 import re
 from datetime import datetime
 from difflib import SequenceMatcher
-from processors import places4studentsSchema
+from processors import places4studentsschema
 
 def clean_text(text):
     """
