@@ -6,6 +6,7 @@ NUM_BEDROOMS = {
                                             '5 or more bedrooms', 'or more bedrooms']
                 }
 
+
 NUM_WASHROOMS = {
                 '1 (or 1.5) washroom': ['1', '1.5'],
                 '2 (or 2.5) washrooms': ['1.5'],
