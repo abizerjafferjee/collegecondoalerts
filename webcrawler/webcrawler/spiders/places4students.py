@@ -39,12 +39,12 @@ class Places4studentsSpider(scrapy.Spider):
         """
         main function to scrape a college's property listings
         """
-        if settings['ENV'] == 'dev':
+        if settings['ENV'] == 'DEV':
             driver = webdriver.Chrome(
                 os.path.abspath(os.path.join(basepath, '../../chromedriver'))
             )
         
-        elif settings['ENV'] == 'prod':
+        elif settings['ENV'] == 'PROD':
             chrome_options = Options()
             chrome_options.add_argument('--headless')
             chrome_options.add_argument('--no-sandbox')
