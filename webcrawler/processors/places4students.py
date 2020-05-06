@@ -79,15 +79,15 @@ class Places4StudentsProcessor():
         }
 
         _record['lease information']['tenant information required'] = self.parse_func([['tenant_information_required']],
-                                                                                      places4studentsSchema.LEASE_REQUIREMENTS,
+                                                                                      places4studentsschema.LEASE_REQUIREMENTS,
                                                                                       dict)
 
         _record['lease information']['lease condition'] = self.parse_func([['lease_conditions']],
-                                                                          places4studentsSchema.LEASE_CONDITIONS,
+                                                                          places4studentsschema.LEASE_CONDITIONS,
                                                                           dict)
 
         _record['lease information']['lease type'] = self.parse_func([['lease_types']],
-                                                                     places4studentsSchema.LEASE_TYPES,
+                                                                     places4studentsschema.LEASE_TYPES,
                                                                      list)
 
         _record['location'] = {
@@ -113,22 +113,22 @@ class Places4StudentsProcessor():
         }
 
         _record['accomodation']['number of rooms'] = self.parse_func([['type_of_accomodation']],
-                                                                     places4studentsSchema.NUM_BEDROOMS,
+                                                                     places4studentsschema.NUM_BEDROOMS,
                                                                      list)
 
         _record['accomodation']['accomodation type'] = self.parse_func([['type_of_accomodation']],
-                                                                       places4studentsSchema.HOUSE_TYPES,
+                                                                       places4studentsschema.HOUSE_TYPES,
                                                                        list)
 
         if use_rental_option:
             _record['accomodation']['number of washrooms'] = self.parse_func(
                                                                 [['rental_information', 'Bath']],
-                                                                places4studentsSchema.NUM_WASHROOMS,
+                                                                places4studentsschema.NUM_WASHROOMS,
                                                                 list)
         else:
             _record['accomodation']['number of washrooms'] = self.parse_func(
                                                                 [['num_washrooms']],
-                                                                places4studentsSchema.NUM_WASHROOMS,
+                                                                places4studentsschema.NUM_WASHROOMS,
                                                                 list)
 
         for key, val in self.parse_features().items():
