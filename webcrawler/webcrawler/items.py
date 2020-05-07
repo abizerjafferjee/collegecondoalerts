@@ -13,6 +13,7 @@ class WebcrawlerItem(scrapy.Item):
     pass
 
 class Places4StudentsListingItem(scrapy.Item):
+    current_date = scrapy.Field()
     college_name = scrapy.Field()
     website = scrapy.Field()
     url = scrapy.Field()

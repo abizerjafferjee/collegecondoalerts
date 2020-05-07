@@ -40,7 +40,6 @@ class MongoDBPipeline(object):
         #         raise DropItem("Missing {}!".format(data))
         if valid:
             self.collection.insert(dict(item))
-            print("listing added")
         return item
     
     def open_spider(self, spider):

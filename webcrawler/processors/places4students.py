@@ -1,9 +1,14 @@
 import pymongo
+import logging
 import pprint
 import re
 from datetime import datetime
 from difflib import SequenceMatcher
 from processors import places4studentsschema
+
+fh = logging.FileHandler('error.log')
+errorLogger = logging.getLogger()
+errorLogger.addHandler(fh)
 
 def clean_text(text):
     """
@@ -28,15 +33,23 @@ class Places4StudentsProcessor():
         self.write_to_db()
     
     def get_db(self):
-        client = pymongo.MongoClient('mongodb://localhost:27017/')
-        db = client['collegecondoalerts']
-        return db
+        try:
+            client = pymongo.MongoClient('mongodb://localhost:27017/')
+            db = client['collegecondoalerts']
+            return db
+        except Exception as e:
+            errorLogger.error('Mongo connection error: {}'.format(str(e)))
+            raise e
 
     def write_to_db(self):
         # delete previous data in processed_data
-        self.write_collection.remove({})
-        for record in self.processed_data:
-            self.write_collection.insert(record)
+        try:
+            self.write_collection.remove({})
+            for record in self.processed_data:
+                self.write_collection.insert(record)
+        except Exception as e:
+            errorLogger.error('Mongo connection error: {}'.format(str(e)))
+            raise e
 
     def prepare_data(self):
         all_data = self.read_collection.find({})
@@ -253,75 +266,90 @@ class Places4StudentsProcessor():
         return title_text
     
     def parse_occupancy_date(self, use_rental_option):
-        if use_rental_option:
-            date_text = clean_text(self.current_record['rental_information']['Occupancy Date'])
-        else:
-            date_text = clean_text(self.current_record['occupancy_date'])
-        date_text = date_text.replace(',', '').replace(' 0', ' ').replace(' ', '-').strip()
         try:
-            return str(datetime.strptime(date_text, '%B-%d-%Y').date())
-        except:
-            return date_text
+            if use_rental_option:
+                date_text = clean_text(self.current_record['rental_information']['Occupancy Date'])
+            else:
+                date_text = clean_text(self.current_record['occupancy_date'])
+            date_text = date_text.replace(',', '').replace(' 0', ' ').replace(' ', '-').strip()
+            try:
+                return str(datetime.strptime(date_text, '%B-%d-%Y').date())
+            except Exception as e:
+                errorLogger.error('Cannot parse occupancy date: {}'.format(str(e)))
+                return date_text
 
     def parse_distance(self):
-        distance = clean_text(self.current_record['distance']['distance']).split()
-        duration_by_walking = clean_text(self.current_record['distance']['duration_by_walking']).split()
-        duration_by_bicycling = clean_text(self.current_record['distance']['duration_by_bicycling']).split()
-        duration_by_driving = clean_text(self.current_record['distance']['duration_by_driving']).split()
-        _distance = {'magnitude': distance[0], 'measure': distance[1]} if distance else {}
-        _duration_by_walking = {'magnitude': duration_by_walking[0], 'measure': duration_by_walking[1]} if duration_by_walking else {}
-        _duration_by_bicycling = {'magnitude': duration_by_bicycling[0], 'measure': duration_by_bicycling[1]} if duration_by_bicycling else {}
-        _duration_by_driving = {'magnitude': duration_by_driving[0], 'measure': duration_by_driving[1]} if duration_by_driving else {}
-        return _distance, _duration_by_walking, _duration_by_bicycling, _duration_by_driving
+        try:
+            distance = clean_text(self.current_record['distance']['distance']).split()
+            duration_by_walking = clean_text(self.current_record['distance']['duration_by_walking']).split()
+            duration_by_bicycling = clean_text(self.current_record['distance']['duration_by_bicycling']).split()
+            duration_by_driving = clean_text(self.current_record['distance']['duration_by_driving']).split()
+            _distance = {'magnitude': distance[0], 'measure': distance[1]} if distance else {}
+            _duration_by_walking = {'magnitude': duration_by_walking[0], 'measure': duration_by_walking[1]} if duration_by_walking else {}
+            _duration_by_bicycling = {'magnitude': duration_by_bicycling[0], 'measure': duration_by_bicycling[1]} if duration_by_bicycling else {}
+            _duration_by_driving = {'magnitude': duration_by_driving[0], 'measure': duration_by_driving[1]} if duration_by_driving else {}
+            return _distance, _duration_by_walking, _duration_by_bicycling, _duration_by_driving
+        except Exception as e:
+            errorLogger.error('Cannot get distance date: {}'.format(str(e)))
+            return None, None, None, None
     
     def parse_rental_rate(self, use_rental_option):
-        if use_rental_option:
-            return {
-                'min rent': clean_text(self.current_record['rental_information']['Min Rent']),
-                'max rent': clean_text(self.current_record['rental_information']['Max Rent']),
-                'currency': 'cdn',
-                'frequency': None,
-            }
-        else:
-            rate_text = clean_text(self.current_record['rental_rate'])
-            if rate_text != '':
-                currencies = ['cdn']
-                currency = ''
-                for curr in currencies:
-                    if curr in rate_text:
-                        currency = curr
-                
-                frequencies = ['per month', 'per room / month']
-                frequency = ''
-                for freq in frequencies:
-                    if freq in rate_text:
-                        frequency = freq
-                
-                r = re.compile('^[0-9].+$')
-                rates = rate_text.split()
-                rates = list(filter(r.match, rates))
-                min_rate, max_rate = None, None
-                if len(rates) == 1:
-                    min_rate = rates[0]
-                    max_rate = rates[0]
-                elif len(rates) == 2:
-                    min_rate = rates[0]
-                    max_rate = rates[1]
-
+        try:
+            if use_rental_option:
                 return {
-                    'min rent': min_rate,
-                    'max rent': max_rate,
-                    'currency': currency,
-                    'frequency': frequency
+                    'min rent': clean_text(self.current_record['rental_information']['Min Rent']),
+                    'max rent': clean_text(self.current_record['rental_information']['Max Rent']),
+                    'currency': 'cdn',
+                    'frequency': None,
                 }
-                return min_rate, max_rate, currency, frequency
             else:
-                return {
-                    'min rent': None,
-                    'max rent': None,
-                    'currency': None,
-                    'frequency': None
-                }
+                rate_text = clean_text(self.current_record['rental_rate'])
+                if rate_text != '':
+                    currencies = ['cdn']
+                    currency = ''
+                    for curr in currencies:
+                        if curr in rate_text:
+                            currency = curr
+                    
+                    frequencies = ['per month', 'per room / month']
+                    frequency = ''
+                    for freq in frequencies:
+                        if freq in rate_text:
+                            frequency = freq
+                    
+                    r = re.compile('^[0-9].+$')
+                    rates = rate_text.split()
+                    rates = list(filter(r.match, rates))
+                    min_rate, max_rate = None, None
+                    if len(rates) == 1:
+                        min_rate = rates[0]
+                        max_rate = rates[0]
+                    elif len(rates) == 2:
+                        min_rate = rates[0]
+                        max_rate = rates[1]
+
+                    return {
+                        'min rent': min_rate,
+                        'max rent': max_rate,
+                        'currency': currency,
+                        'frequency': frequency
+                    }
+                    return min_rate, max_rate, currency, frequency
+                else:
+                    return {
+                        'min rent': None,
+                        'max rent': None,
+                        'currency': None,
+                        'frequency': None
+                    }
+        except Exception as e:
+            errorLogger.error('Cannot parse rental rates: {}'.format(str(e)))
+            return {
+                'min rent': None,
+                'max rent': None,
+                'currency': None,
+                'frequency': None
+            }     
     
     def parse_func(self, fields, schema, output_type):
         """
@@ -332,23 +360,28 @@ class Places4StudentsProcessor():
         elif output_type == dict:
             output = {}
 
-        for field in fields:
-            text = clean_text(self.get_text(field))
+        try:
+            for field in fields:
+                text = clean_text(self.get_text(field))
 
-            for key, variables in schema.items():
-                for variable in variables:
+                for key, variables in schema.items():
+                    for variable in variables:
 
-                    if output_type == list:
-                        if variable in text:
-                            output.append(key)
-                            break
+                        if output_type == list:
+                            if variable in text:
+                                output.append(key)
+                                break
 
-                    elif output_type == dict:
-                        if variable in text:
-                            output[key] = True
-                            break
-                        else:
-                            output[key] = False
+                        elif output_type == dict:
+                            if variable in text:
+                                output[key] = True
+                                break
+                            else:
+                                output[key] = False
+        except Exception as e:
+            errorLogger.error(
+                'Parse func failed for {} with {}'.format(','.join(fields), str(e))
+            )
 
         return output
 
