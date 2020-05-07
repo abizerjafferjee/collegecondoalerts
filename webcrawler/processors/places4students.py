@@ -266,17 +266,16 @@ class Places4StudentsProcessor():
         return title_text
     
     def parse_occupancy_date(self, use_rental_option):
+        if use_rental_option:
+            date_text = clean_text(self.current_record['rental_information']['Occupancy Date'])
+        else:
+            date_text = clean_text(self.current_record['occupancy_date'])
+        date_text = date_text.replace(',', '').replace(' 0', ' ').replace(' ', '-').strip()
         try:
-            if use_rental_option:
-                date_text = clean_text(self.current_record['rental_information']['Occupancy Date'])
-            else:
-                date_text = clean_text(self.current_record['occupancy_date'])
-            date_text = date_text.replace(',', '').replace(' 0', ' ').replace(' ', '-').strip()
-            try:
-                return str(datetime.strptime(date_text, '%B-%d-%Y').date())
-            except Exception as e:
-                errorLogger.error('Cannot parse occupancy date: {}'.format(str(e)))
-                return date_text
+            return str(datetime.strptime(date_text, '%B-%d-%Y').date())
+        except Exception as e:
+            errorLogger.error('Cannot parse occupancy date: {}'.format(str(e)))
+            return date_text
 
     def parse_distance(self):
         try:
