@@ -24,7 +24,7 @@ ROBOTSTXT_OBEY = True
 ####################################################
 # NEW SETTINGS
 ####################################################
-ENV = 'PROD'
+ENV = 'DEV'
 CHROME_DRIVER = '/usr/bin/chromedriver'
 
 ITEM_PIPELINES = {

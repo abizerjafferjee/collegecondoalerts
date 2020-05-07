@@ -9,7 +9,9 @@ TODO:
 # -*- coding: utf-8 -*-
 import os
 import json
+import logging
 from time import sleep
+from datetime import date
 
 import scrapy
 from scrapy.selector import Selector
@@ -19,12 +21,15 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.remote_connection import LOGGER
 
 from ..items import Places4StudentsListingItem
 from scrapy.utils.project import get_project_settings
 
 settings = get_project_settings()
 basepath = os.path.dirname(__file__)
+# LOGGER.setLevel(logging.ERROR)
+# logging.getLogger('scrapy').setLevel(logging.ERROR)
 
 class Places4studentsSpider(scrapy.Spider):
     name = 'places4students'
@@ -33,7 +38,6 @@ class Places4studentsSpider(scrapy.Spider):
     college_names = {
         'VBThwOQPAX4': 'university of waterloo'
     }
-    file_name = 'test.json'
 
     def parse(self, response):
         """
@@ -133,7 +137,6 @@ class Places4studentsSpider(scrapy.Spider):
 
                 return text
         except Exception as e:
-            # print(str(e))
             return ''
 
     def get_from_column_lists(self, driver, xpaths):
@@ -231,7 +234,8 @@ class Places4studentsSpider(scrapy.Spider):
         driver.get(listing_url)
 
         item = Places4StudentsListingItem()
-
+        
+        item['current_date'] = str(date.today())
         item['url'] = listing_url
         item['title'] = self.driver_get(driver, '//*[@id="MainContent_detailsTitle"]', 'text')
         item['address'] = self.driver_get(driver, '//*[@id="MainContent_Label3"]', 'text', parent_xpath='..')
